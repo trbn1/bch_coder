@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,21 +14,21 @@
 
 int main(void)
 {
-	static const unsigned int ERR_TYPE = 0x0;
+	static const uint_fast8_t err_type = 0x0;
 	/* Initializating generator and parameters */
-	static const unsigned int field = 0x2;
-	static const unsigned int field_degree = FIELD_DEGREE - 1;
-	static const unsigned int code_length = CODE_LENGTH;
-	static const unsigned int data_length = DATA_LENGTH;
-	static const unsigned int err_corr_capability = ERR_CORR_CAPABILITY;
-	static const unsigned int min_distance = 0x4f;
-	static const unsigned int control_length = CONTROL_LENGTH - 1;
+	static const uint_fast8_t field = 0x2;
+	static const uint_fast8_t field_degree = FIELD_DEGREE - 1;
+	static const uint_fast16_t code_length = CODE_LENGTH;
+	static const uint_fast8_t data_length = DATA_LENGTH;
+	static const uint_fast8_t err_corr_capability = ERR_CORR_CAPABILITY;
+	static const uint_fast8_t min_distance = 0x4f;
+	static const uint_fast16_t control_length = CONTROL_LENGTH - 1;
 
-	static const unsigned int prim_poly_tab[] = {
+	static const uint_fast8_t prim_poly_tab[] = {
 		0x0, 0x1, 0x5, 0x7, 0x9,
 	};
 
-	static const unsigned int gen_poly_tab[] = {
+	static const uint_fast16_t gen_poly_tab[] = {
 		0x0, 0x2, 0x3, 0x6, 0x7, 0x8, 0xa, 0xb,
 		0xc, 0xe, 0x10, 0x11, 0x12, 0x13, 0x18, 0x1b,
 		0x1f, 0x20, 0x21, 0x22, 0x24, 0x28, 0x29, 0x2b,
@@ -50,11 +51,11 @@ int main(void)
 		0x121, 0x122, 0x123,
 	};
 
-	unsigned int prim_poly_vector[FIELD_DEGREE] = { 0 };
-	unsigned int gen_poly_vector[CONTROL_LENGTH] = { 0 };
+	uint_fast8_t prim_poly_vector[FIELD_DEGREE] = { 0 };
+	uint_fast16_t gen_poly_vector[CONTROL_LENGTH] = { 0 };
 
-	size_t prim_poly_tab_size = sizeof(prim_poly_tab) / sizeof(prim_poly_tab[0]);
-	size_t gen_poly_tab_size = sizeof(gen_poly_tab) / sizeof(gen_poly_tab[0]);
+	static const size_t prim_poly_tab_size = sizeof(prim_poly_tab) / sizeof(prim_poly_tab[0]);
+	static const size_t gen_poly_tab_size = sizeof(gen_poly_tab) / sizeof(gen_poly_tab[0]);
 
 	for (int i = 0; i < prim_poly_tab_size; i++)
 		prim_poly_vector[prim_poly_tab[i]] = 1;
@@ -63,20 +64,20 @@ int main(void)
 		gen_poly_vector[gen_poly_tab[i]] = 1;
 
 	/* Generating random data */
-	srand( (unsigned int)time(NULL) );
-	unsigned int data_vector[DATA_LENGTH] = { 0 };
+	srand( (uint_fast16_t)time(NULL) );
+	uint_fast8_t data_vector[DATA_LENGTH] = { 0 };
 
-	for (unsigned int i = 0; i < data_length; i++)
+	for (uint_fast8_t i = 0; i < data_length; i++)
 		data_vector[i] = rand() % 2;
 
 	/* Encoding data */
-	unsigned int rest_vector[CONTROL_LENGTH] = { 0 };
-	unsigned int result = 0;
+	uint_fast16_t rest_vector[CONTROL_LENGTH] = { 0 };
+	uint_fast16_t result = 0;
 
-		for (int i = data_length - 1; i >= 0; i--) {
+		for (int_fast16_t i = data_length - 1; i >= 0; i--) {
 			result = data_vector[i] ^ rest_vector[control_length - 1];
 			if (result != 0) {
-				for (int j = control_length - 1; j > 0; j--)
+				for (int_fast16_t j = control_length - 1; j > 0; j--)
 					if (gen_poly_vector[j] != 0)
 						rest_vector[j] = rest_vector[j - 1] ^ result;
 					else
@@ -84,58 +85,57 @@ int main(void)
 				rest_vector[0] = gen_poly_vector[0] && result;
 			}
 			else {
-				for (int j = control_length - 1; j > 0; j--)
+				for (int_fast16_t j = control_length - 1; j > 0; j--)
 					rest_vector[j] = rest_vector[j - 1];
 				rest_vector[0] = 0;
 			}
 		}
 
-	unsigned int enc_vector[CODE_LENGTH] = { 0 };
+	uint_fast16_t enc_vector[CODE_LENGTH] = { 0 };
 
-	for (unsigned int i = 0; i < control_length; i++)
-		enc_vector[i] = rest_vector[i];
+	memcpy(enc_vector, rest_vector, sizeof(rest_vector));
 
-	for (unsigned int i = 0; i < data_length; i++)
+	for (uint_fast8_t i = 0; i < data_length; i++)
 		enc_vector[i + control_length] = data_vector[i];
 
 	/* Decoding data (simple)*/
-	unsigned int recv_vector[CODE_LENGTH] = { 0 };
-	unsigned int recv_rest_vector[CONTROL_LENGTH] = { 0 };
-	unsigned int shift = 0;
-	unsigned int err_detected = 0;
-	unsigned int dec_err = 0;
+	uint_fast16_t recv_vector[CODE_LENGTH] = { 0 };
+	uint_fast16_t recv_rest_vector[CONTROL_LENGTH] = { 0 };
+	uint_fast16_t shift = 0;
+	uint_fast8_t err_detected = 0;
+	uint_fast8_t dec_err = 0;
 	result = 0;
 
 	memcpy(recv_vector, enc_vector, sizeof(recv_vector));
 
-	unsigned int rand_err_location[ERR_AMOUNT] = { 0 };
+	uint_fast16_t rand_err_location[ERR_AMOUNT] = { 0 };
 	/* Random spread errors */
-	if (ERR_TYPE == 0) {
-		for (unsigned int i = 0; i < ERR_AMOUNT; i++) {
+	if (err_type == 0) {
+		for (uint_fast8_t i = 0; i < ERR_AMOUNT; i++) {
 			rand_err_location[i] = rand() % code_length;
 			recv_vector[rand_err_location[i]] = 1 - recv_vector[rand_err_location[i]];
 		}
 	}
 	/* Random condensed errors */
-	else if (ERR_TYPE == 1) {
-		unsigned int init_err_location = 0;
+	else if (err_type == 1) {
+		uint_fast16_t init_err_location = 0;
 		init_err_location = rand() % code_length;
-		for (unsigned int i = 0; i < ERR_AMOUNT; i++) {
+		for (uint_fast8_t i = 0; i < ERR_AMOUNT; i++) {
 			rand_err_location[i] = (i + init_err_location) % code_length;
 			recv_vector[rand_err_location[i]] = 1 - recv_vector[rand_err_location[i]];
 		}
 	}
 
-	unsigned int shifted_recv_vector[CODE_LENGTH] = { 0 };
+	uint_fast16_t shifted_recv_vector[CODE_LENGTH] = { 0 };
 	memcpy(shifted_recv_vector, recv_vector, sizeof(shifted_recv_vector));
 
-	unsigned int weight = 0;
+	uint_fast16_t weight = 0;
 	while (1) {
 		memset(recv_rest_vector, 0, sizeof(recv_rest_vector));
-		for (int i = code_length - 1; i >= 0; i--) {
+		for (int_fast16_t i = code_length - 1; i >= 0; i--) {
 			result = shifted_recv_vector[i] ^ recv_rest_vector[code_length - data_length - 1];
 			if (result != 0) {
-				for (int j = code_length - data_length - 1; j > 0; j--)
+				for (int_fast16_t j = code_length - data_length - 1; j > 0; j--)
 					if (gen_poly_vector[j] != 0)
 						recv_rest_vector[j] = recv_rest_vector[j - 1] ^ result;
 					else
@@ -143,14 +143,14 @@ int main(void)
 				recv_rest_vector[0] = gen_poly_vector[0] && result;
 			}
 			else {
-				for (int j = code_length - data_length - 1; j > 0; j--)
+				for (int_fast16_t j = code_length - data_length - 1; j > 0; j--)
 					recv_rest_vector[j] = recv_rest_vector[j - 1];
 				recv_rest_vector[0] = 0;
 			}
 		}
 
 		weight = 0;
-		for (unsigned int i = 0; i < control_length; i++)
+		for (uint_fast16_t i = 0; i < control_length; i++)
 			weight += recv_rest_vector[i];
 
 		if (weight == 0)
@@ -168,10 +168,10 @@ int main(void)
 		}
 
 		if ((weight > err_corr_capability) && (shift < CODE_LENGTH)) {
-			unsigned int tmp = 0;
+			uint_fast16_t tmp = 0;
 			shift++;
 			tmp = shifted_recv_vector[0];
-			for (unsigned int i = 0; i < code_length - 1; i++)
+			for (uint_fast16_t i = 0; i < code_length - 1; i++)
 			{
 				shifted_recv_vector[i] = shifted_recv_vector[i + 1];
 			}
@@ -179,13 +179,13 @@ int main(void)
 		}
 	}
 
-	unsigned int repaired_recv_vector[CODE_LENGTH] = { 0 };
-	unsigned int err_loc[ERR_CORR_CAPABILITY] = { 0 };
+	uint_fast16_t repaired_recv_vector[CODE_LENGTH] = { 0 };
+	uint_fast16_t err_loc[ERR_CORR_CAPABILITY] = { 0 };
 	if ((weight > 0) && (shift == 0)) {
 		memcpy(repaired_recv_vector, shifted_recv_vector, sizeof(repaired_recv_vector));
 
-		unsigned int counter = 0;
-		for (unsigned int i = 0; i < control_length; i++)
+		uint_fast16_t counter = 0;
+		for (uint_fast16_t i = 0; i < control_length; i++)
 			if (recv_rest_vector[i] == 1) {
 				repaired_recv_vector[i + DATA_LENGTH] = 1 - repaired_recv_vector[i + DATA_LENGTH];
 				err_loc[0 + counter] = i + DATA_LENGTH;
@@ -194,9 +194,9 @@ int main(void)
 	}
 
 	if ((weight > 0) && (shift != 0) && (shift < CODE_LENGTH)) {
-		unsigned int tmp_arr[CODE_LENGTH] = { 0 };
-		unsigned int counter = 0;
-		for (unsigned int i = 0; i < control_length; i++)
+		uint_fast16_t tmp_arr[CODE_LENGTH] = { 0 };
+		uint_fast16_t counter = 0;
+		for (uint_fast16_t i = 0; i < control_length; i++)
 			if (recv_rest_vector[i] == 1) {
 				shifted_recv_vector[i + DATA_LENGTH] = 1 - shifted_recv_vector[i + DATA_LENGTH];
 				err_loc[0 + counter] = (i + shift + DATA_LENGTH) % CODE_LENGTH;
@@ -205,18 +205,16 @@ int main(void)
 
 		memcpy(tmp_arr, shifted_recv_vector, sizeof(tmp_arr));
 
-		for (unsigned int i = 0; i < code_length - shift; i++)
+		for (uint_fast16_t i = 0; i < code_length - shift; i++)
 			repaired_recv_vector[i + shift] = tmp_arr[i];
 
-		unsigned int tmp = 0;
-		for (unsigned int i = code_length - shift; i < code_length; i++) {
+		uint_fast16_t tmp = 0;
+		for (uint_fast16_t i = code_length - shift; i < code_length; i++) {
 			repaired_recv_vector[0 + tmp] = tmp_arr[i];
 			tmp++;
 		}
 	}
 	
-
-
 	FILE *log;
 	errno_t err;
 	if ((err = fopen_s(&log, "out.log", "w")) != 0) {
@@ -225,39 +223,39 @@ int main(void)
 	else {
 
 		fprintf(log, "Primitive polynomial vector:\n");
-		for (unsigned int i = 0; i <= field_degree; i++)
+		for (uint_fast8_t i = 0; i <= field_degree; i++)
 			fprintf(log, "%d", prim_poly_vector[i]);
 
 		fprintf(log, "\n\nGenerator polynomial vector:\n");
-		for (unsigned int i = 0; i <= control_length; i++) {
+		for (uint_fast16_t i = 0; i <= control_length; i++) {
 			if ((i > 1) && (i % LOG_TRIM == 0))
 				fprintf(log, "\n");
 			fprintf(log, "%d", gen_poly_vector[i]);
 		}
 
 		fprintf(log, "\n\nRandom data vector:\n");
-		for (unsigned int i = 0; i < data_length; i++) {
+		for (uint_fast8_t i = 0; i < data_length; i++) {
 			if ((i > 1) && (i % LOG_TRIM == 0))
 				fprintf(log, "\n");
 			fprintf(log, "%d", data_vector[i]);
 		}
 
 		fprintf(log, "\n\nRest vector:\n");
-		for (unsigned int i = 0; i < control_length; i++) {
+		for (uint_fast16_t i = 0; i < control_length; i++) {
 			if ((i > 1) && (i % LOG_TRIM == 0))
 				fprintf(log, "\n");
 			fprintf(log, "%d", rest_vector[i]);
 		}
 
 		fprintf(log, "\n\nEncoded vector:\n");
-		for (unsigned int i = 0; i < code_length; i++) {
+		for (uint_fast16_t i = 0; i < code_length; i++) {
 			if ((i > 1) && (i % LOG_TRIM == 0))
 				fprintf(log, "\n");
 			fprintf(log, "%d", enc_vector[i]);
 		}
 
 		fprintf(log, "\n\nRandom error locations (defined):\n");
-		for (unsigned int i = 0; i < ERR_AMOUNT; i++) {
+		for (uint_fast8_t i = 0; i < ERR_AMOUNT; i++) {
 			if ((i > 1) && (i % (LOG_TRIM / 5) == 0))
 				fprintf(log, "\n");
 			fprintf(log, "%d", rand_err_location[i]);
@@ -266,7 +264,7 @@ int main(void)
 		}
 
 		fprintf(log, "\n\nReceived vector:\n");
-		for (unsigned int i = 0; i < code_length; i++) {
+		for (uint_fast16_t i = 0; i < code_length; i++) {
 			if ((i > 1) && (i % LOG_TRIM == 0))
 				fprintf(log, "\n");
 			fprintf(log, "%d", recv_vector[i]);
@@ -275,7 +273,7 @@ int main(void)
 		fprintf(log, "\n\nReceived vector was shifted %d times.", shift);
 
 		fprintf(log, "\n\nReceived rest vector:\n");
-		for (unsigned int i = 0; i < control_length; i++) {
+		for (uint_fast16_t i = 0; i < control_length; i++) {
 			if ((i > 1) && (i % LOG_TRIM == 0))
 				fprintf(log, "\n");
 			fprintf(log, "%d", recv_rest_vector[i]);
@@ -286,7 +284,7 @@ int main(void)
 		}
 		else if (err_detected != 0 && shift < CODE_LENGTH) {
 			fprintf(log, "\n\nErrors positions:\n");
-			for (unsigned int i = 0; i < weight; i++) {
+			for (uint_fast8_t i = 0; i < weight; i++) {
 				if ((i > 1) && (i % (LOG_TRIM / 5) == 0))
 					fprintf(log, "\n");
 				fprintf(log, "%d", err_loc[i]);
@@ -295,7 +293,7 @@ int main(void)
 			}
 
 			fprintf(log, "\n\n%d errors detected and repaired.\n\nRepaired received vector:\n", weight);
-			for (unsigned int i = 0; i < code_length; i++) {
+			for (uint_fast16_t i = 0; i < code_length; i++) {
 				if ((i > 1) && (i % LOG_TRIM == 0))
 					fprintf(log, "\n");
 				fprintf(log, "%d", repaired_recv_vector[i]);
