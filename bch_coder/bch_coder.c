@@ -318,7 +318,7 @@ int main(void)
 			}
 		}
 		else if (dec_err == 1) {
-			fprintf(log, "\n\nDecoding error, unreparable errors.\n");
+			fprintf(log, "\n\nDecoding error, unrepairable errors.\n");
 		}
 	}
 	return 0;
