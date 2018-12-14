@@ -15,6 +15,8 @@
 int main(void)
 {
 	static const uint_fast8_t err_type = 0x0;
+	static const uint_fast8_t global_hightlight = 0x1;
+
 	/* Initializating generator and parameters */
 	static const uint_fast8_t field = 0x2;
 	static const uint_fast8_t field_degree = FIELD_DEGREE - 1;
@@ -265,9 +267,17 @@ int main(void)
 
 		fprintf(log, "\n\nReceived vector:\n");
 		for (uint_fast16_t i = 0; i < code_length; i++) {
+			uint_fast8_t highlight = 0;
+			for (uint_fast8_t j = 0; j < weight; j++)
+				if (i == err_loc[j])
+					highlight = 1;
 			if ((i > 1) && (i % LOG_TRIM == 0))
 				fprintf(log, "\n");
+			if ((global_hightlight == 1) && (highlight == 1) && (dec_err != 1))
+				fprintf(log, "[");
 			fprintf(log, "%d", recv_vector[i]);
+			if ((global_hightlight == 1) && (highlight == 1) && (dec_err != 1))
+				fprintf(log, "]");
 		}
 
 		fprintf(log, "\n\nReceived vector was shifted %d times.", shift);
@@ -294,13 +304,21 @@ int main(void)
 
 			fprintf(log, "\n\n%d errors detected and repaired.\n\nRepaired received vector:\n", weight);
 			for (uint_fast16_t i = 0; i < code_length; i++) {
+				uint_fast8_t highlight = 0;
+				for (uint_fast8_t j = 0; j < weight; j++)
+					if (i == err_loc[j])
+						highlight = 1;
 				if ((i > 1) && (i % LOG_TRIM == 0))
 					fprintf(log, "\n");
+				if ((global_hightlight == 1) && (highlight == 1))
+					fprintf(log, "[");
 				fprintf(log, "%d", repaired_recv_vector[i]);
+				if ((global_hightlight == 1) && (highlight == 1))
+					fprintf(log, "]");
 			}
 		}
 		else if (dec_err == 1) {
-			fprintf(log, "\n\nDecoding error, too many errors.\n");
+			fprintf(log, "\n\nDecoding error, unreparable errors.\n");
 		}
 	}
 	return 0;
