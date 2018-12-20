@@ -158,10 +158,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bch_coder.c" />
+    <Text Include="out.log" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="out.log" />
+    <ClCompile Include="src\bch.c" />
+    <ClCompile Include="src\log.c" />
+    <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\timers.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\headers\bch.h" />
+    <ClInclude Include="src\headers\const.h" />
+    <ClInclude Include="src\headers\log.h" />
+    <ClInclude Include="src\headers\timers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
