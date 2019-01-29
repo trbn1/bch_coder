@@ -18,6 +18,9 @@
     <Text Include="out.log">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="..\gen.log">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.c">
@@ -46,5 +49,10 @@
     <ClInclude Include="src\headers\timers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\generator.py">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

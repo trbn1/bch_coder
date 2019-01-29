@@ -10,6 +10,8 @@ void reset_timers(struct timers *timers) {
 	timers->exec_stop;
 	timers->enc_start;
 	timers->enc_stop;
+	timers->sdec_start;
+	timers->sdec_stop;
 	timers->dec_start;
 	timers->dec_stop;
 }

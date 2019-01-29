@@ -158,6 +158,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="..\gen.log" />
     <Text Include="out.log" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +172,9 @@
     <ClInclude Include="src\headers\const.h" />
     <ClInclude Include="src\headers\log.h" />
     <ClInclude Include="src\headers\timers.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\generator.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

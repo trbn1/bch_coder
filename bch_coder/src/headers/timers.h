@@ -10,11 +10,14 @@ struct timers {
 	uint64_t exec_stop;
 	uint64_t enc_start;
 	uint64_t enc_stop;
+	uint64_t sdec_start;
+	uint64_t sdec_stop;
 	uint64_t dec_start;
 	uint64_t dec_stop;
 
 	double exec_times[LOOPS];
 	double enc_times[LOOPS];
+	double sdec_times[LOOPS];
 	double dec_times[LOOPS];
 };
 
